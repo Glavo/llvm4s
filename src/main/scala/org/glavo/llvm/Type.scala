@@ -6,14 +6,18 @@ import org.bytedeco.javacpp.{LLVM, PointerPointer}
 
 import scala.annotation.switch
 
-case class Type(delegate: LLVM.LLVMTypeRef) {
+abstract case class Type(delegate: LLVM.LLVMTypeRef) {
+
+  Objects.requireNonNull(delegate)
 
   lazy val kind: Type.Kind = Type.Kind(LLVM.LLVMGetTypeKind(delegate))
 
   lazy val context: Context =
     new Context(Objects.requireNonNull(LLVM.LLVMGetTypeContext(delegate)))
 
-  def isFunction: Boolean = kind == Type.Kind.Function
+  def isSized: Boolean = if (LLVM.LLVMTypeIsSized(delegate) != 0) true else false
+
+  def apply(paramTypes: Type*): Type.Function = Type.function(this, paramTypes)
 
   override def toString: String = {
     val bs = LLVM.LLVMPrintTypeToString(delegate)
@@ -120,64 +124,88 @@ object Type {
   }
 
   @inline
-  def apply(typeRef: LLVM.LLVMTypeRef): Type =
-    if (typeRef != null) new Type(typeRef) else null
+  def apply(typeRef: LLVM.LLVMTypeRef): Type = {
+    Objects.requireNonNull(typeRef)
+    val k = Kind(LLVM.LLVMGetTypeKind(typeRef))
+    k match {
+      case Kind.Integer => Integer(typeRef)
+      case Kind.Function => new Function(typeRef)
+      //todo
+      case _ => Unknown(typeRef)
+    }
+  }
 
-  class Int1(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  sealed class Integer(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate) {
+    lazy val width: Int = LLVM.LLVMGetIntTypeWidth(delegate)
+  }
+
+  object Integer {
+    def apply(intTypeRef: LLVM.LLVMTypeRef): Integer = {
+      val w = LLVM.LLVMGetIntTypeWidth(intTypeRef)
+      val context = Context(LLVM.LLVMGetTypeContext(intTypeRef))
+      apply(w)(context)
+    }
+
+    def apply(numBits: Int)(implicit context: Context): Integer = (numBits: @switch) match {
+      case 1 => int1
+      case 8 => int8
+      case 16 => int16
+      case 32 => int32
+      case 64 => int64
+      case 128 => int128
+      case _ => new Integer(LLVM.LLVMIntTypeInContext(context.delegate, numBits))
+    }
+  }
+
+  class Int1(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
 
   object Int1 {
-    def apply(int: LLVM.LLVMTypeRef): Int1 =
-      if (int != null) new Int1(int) else null
+    def apply(int: LLVM.LLVMTypeRef): Int1 = new Int1(int)
 
     def apply()(implicit context: Context): Int1 =
       int1(context)
   }
 
-  class Int8(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  class Int8(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
 
   object Int8 {
-    def apply(int: LLVM.LLVMTypeRef): Int8 =
-      if (int != null) new Int8(int) else null
+    def apply(int: LLVM.LLVMTypeRef): Int8 = new Int8(int)
 
     def apply()(implicit context: Context): Int8 =
       int8(context)
   }
 
-  class Int16(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  class Int16(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
 
   object Int16 {
-    def apply(int: LLVM.LLVMTypeRef): Int16 =
-      if (int != null) new Int16(int) else null
+    def apply(int: LLVM.LLVMTypeRef): Int16 = new Int16(int)
 
     def apply()(implicit context: Context): Int16 =
       int16(context)
   }
 
-  class Int32(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  class Int32(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
 
   object Int32 {
-    def apply(int: LLVM.LLVMTypeRef): Int32 =
-      if (int != null) new Int32(int) else null
+    def apply(int: LLVM.LLVMTypeRef): Int32 = new Int32(int)
 
     def apply()(implicit context: Context): Int32 =
       int32(context)
   }
 
-  class Int64(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  class Int64(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
 
   object Int64 {
-    def apply(int: LLVM.LLVMTypeRef): Int64 =
-      if (int != null) new Int64(int) else null
+    def apply(int: LLVM.LLVMTypeRef): Int64 = new Int64(int)
 
     def apply()(implicit context: Context): Int64 =
       int64(context)
   }
 
-  class Int128(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  class Int128(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
 
   object Int128 {
-    def apply(int: LLVM.LLVMTypeRef): Int128 =
-      if (int != null) new Int128(int) else null
+    def apply(int: LLVM.LLVMTypeRef): Int128 = new Int128(int)
 
     def apply()(implicit context: Context): Int128 =
       int128(context)
@@ -201,11 +229,36 @@ object Type {
   @inline
   def int128(implicit context: Context): Int128 = Int128(LLVM.LLVMInt128TypeInContext(context.delegate))
 
-  class Function(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  class Function private[llvm](override val delegate: LLVM.LLVMTypeRef, private var _pts: Seq[Type]) extends Type(delegate) {
+    def this(delegate: LLVM.LLVMTypeRef) {
+      this(delegate, null)
+    }
+
+    def paramTypes: Seq[Type] = {
+      if (_pts != null)
+        _pts
+      else {
+        val i = LLVM.LLVMCountParamTypes(delegate)
+        if (i != 0) {
+          val pp = new PointerPointer[LLVM.LLVMTypeRef](i)
+          LLVM.LLVMGetParamTypes(delegate, pp)
+          _pts = (0 until i).map(index => Type(pp.get(classOf[LLVM.LLVMTypeRef], index)))
+          _pts
+        } else {
+          _pts = Seq()
+          _pts
+        }
+      }
+    }
+  }
 
   object Function {
-    def apply(funTypeRef: LLVM.LLVMTypeRef): Function =
-      if (funTypeRef != null) new Function(funTypeRef) else null
+    def apply(funTypeRef: LLVM.LLVMTypeRef): Function = {
+      val r = new Function(funTypeRef)
+      if (r.kind == Kind.Function)
+        r
+      else throw new IllegalArgumentException(s"$r isn't function type ref")
+    }
 
     def apply(returnType: Type, paramTypes: Seq[Type], isVarargs: Boolean = false): Function =
       function(returnType, paramTypes, isVarargs)
@@ -217,8 +270,20 @@ object Type {
     val ps = paramTypes.view.map(_.delegate).toArray
 
     if (ps.length != 0)
-      new Function(LLVM.LLVMFunctionType(returnType.delegate, ps(0), ps.length, if (isVarargs) 1 else 0))
+      new Function(
+        LLVM.LLVMFunctionType(returnType.delegate, ps(0), ps.length, if (isVarargs) 1 else 0),
+        paramTypes
+      )
     else
-      new Function(LLVM.LLVMFunctionType(returnType.delegate, new Array[LLVM.LLVMTypeRef](1)(0), 0, if (isVarargs) 1 else 0))
+      new Function(
+        LLVM.LLVMFunctionType(returnType.delegate, new Array[LLVM.LLVMTypeRef](1)(0), 0, if (isVarargs) 1 else 0),
+        paramTypes)
   }
+
+  class Unknown(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+
+  object Unknown {
+    def apply(typeRef: LLVM.LLVMTypeRef): Unknown = new Unknown(typeRef)
+  }
+
 }
