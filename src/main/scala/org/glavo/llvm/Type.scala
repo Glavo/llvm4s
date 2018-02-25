@@ -615,7 +615,40 @@ object Type {
 
   def vector(elementType: Type, elementCount: Int): Vector = Vector(elementType, elementCount)
 
-  //todo
+  // Other Types
+
+  class Label(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+
+  object Label {
+    def apply(labelTypeRef: LLVM.LLVMTypeRef): Label = {
+      Objects.requireNonNull(labelTypeRef)
+      if (Kind(LLVM.LLVMGetTypeKind(labelTypeRef)) != Kind.Label)
+        throw new IllegalArgumentException
+      new Label(labelTypeRef)
+    }
+
+    def apply()(implicit context: Context): Label =
+      new Label(LLVM.LLVMLabelTypeInContext(context.delegate))
+  }
+
+  class Void(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+
+  object Void {
+    def apply(labelTypeRef: LLVM.LLVMTypeRef): Void = {
+      Objects.requireNonNull(labelTypeRef)
+      if (Kind(LLVM.LLVMGetTypeKind(labelTypeRef)) != Kind.Void)
+        throw new IllegalArgumentException
+      new Void(labelTypeRef)
+    }
+
+    def apply()(implicit context: Context): Void =
+      new Void(LLVM.LLVMVoidTypeInContext(context.delegate))
+  }
+
+  def label(implicit context: Context): Label = Label()(context)
+
+  def void()(implicit context: Context): Void = Void()(context)
+
   class Unknown(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
 
   object Unknown {
