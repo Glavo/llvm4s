@@ -2,19 +2,19 @@ package org.glavo.llvm.core
 
 import java.util.Objects
 
-import org.bytedeco.javacpp.LLVM
+import org.bytedeco.javacpp.LLVM._
 
-case class Context(delegate: LLVM.LLVMContextRef = LLVM.LLVMContextCreate()) {
+case class Context(delegate: LLVMContextRef = LLVMContextCreate()) {
   implicit def context: Context = this
 
   Objects.requireNonNull(delegate)
   //todo
-  override def finalize(): Unit = LLVM.LLVMContextDispose(delegate)
+  override def finalize(): Unit = LLVMContextDispose(delegate)
 }
 
 object Context {
-  implicit val Global: Context = Context(LLVM.LLVMGetGlobalContext())
+  implicit val Global: Context = Context(LLVMGetGlobalContext())
 
-  def apply(contextRef: LLVM.LLVMContextRef = LLVM.LLVMContextCreate()): Context = new Context(contextRef)
+  def apply(contextRef: LLVMContextRef = LLVMContextCreate()): Context = new Context(contextRef)
 
 }

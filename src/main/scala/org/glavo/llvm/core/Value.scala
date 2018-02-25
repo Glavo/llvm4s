@@ -2,14 +2,29 @@ package org.glavo.llvm.core
 
 import java.util.Objects
 
-import org.bytedeco.javacpp.LLVM
+import org.bytedeco.javacpp.LLVM._
 
-case class Value(delegate: LLVM.LLVMValueRef) {
+case class Value(delegate: LLVMValueRef) {
   Objects.requireNonNull(delegate)
 
-  def kind: Value.Kind = Value.Kind(LLVM.LLVMGetValueKind(delegate))
+  def kind: Value.Kind = Value.Kind(LLVMGetValueKind(delegate))
 
-  def name: String = LLVM.LLVMGetValueName(delegate).getString("UTF-8")
+  def name: String = LLVMGetValueName(delegate).getString(org.glavo.llvm.LLVMEncoding)
+
+  def name_=(name: String): Unit = {
+    LLVMSetValueName(delegate, name)
+  }
+
+  def isConstant: Boolean = LLVMIsConstant(delegate) != 0
+
+  def isUndef: Boolean = LLVMIsUndef(delegate) != 0
+
+  override def toString: String = {
+    val bs = LLVMPrintValueToString(delegate)
+    val s = bs.getString(org.glavo.llvm.LLVMEncoding)
+    LLVMDisposeMessage(bs)
+    s"Value($s)"
+  }
 }
 
 object Value {
@@ -19,83 +34,83 @@ object Value {
   object Kind {
 
     def apply(id: Int): Kind = id match {
-      case LLVM.LLVMArgumentValueKind => Argument
-      case LLVM.LLVMBasicBlockValueKind => BasicBlock
-      case LLVM.LLVMMemoryUseValueKind => MemoryUse
-      case LLVM.LLVMMemoryDefValueKind => MemoryDef
-      case LLVM.LLVMMemoryPhiValueKind => MemoryPhi
-      case LLVM.LLVMFunctionValueKind => Function
-      case LLVM.LLVMGlobalAliasValueKind => GlobalAlias
-      case LLVM.LLVMGlobalIFuncValueKind => GlobalIFunc
-      case LLVM.LLVMGlobalVariableValueKind => GlobalVariable
-      case LLVM.LLVMBlockAddressValueKind => BlockAddress
-      case LLVM.LLVMConstantExprValueKind => ConstantExpr
-      case LLVM.LLVMConstantArrayValueKind => ConstantArray
-      case LLVM.LLVMConstantStructValueKind => ConstantStruct
-      case LLVM.LLVMConstantVectorValueKind => ConstantVector
-      case LLVM.LLVMUndefValueValueKind => UndefValue
-      case LLVM.LLVMConstantAggregateZeroValueKind => ConstantAggregateZero
-      case LLVM.LLVMConstantDataArrayValueKind => ConstantDataArray
-      case LLVM.LLVMConstantDataVectorValueKind => ConstantDataVector
-      case LLVM.LLVMConstantIntValueKind => ConstantInt
-      case LLVM.LLVMConstantFPValueKind => ConstantFP
-      case LLVM.LLVMConstantPointerNullValueKind => ConstantPointerNull
-      case LLVM.LLVMConstantTokenNoneValueKind => ConstantTokenNone
-      case LLVM.LLVMMetadataAsValueValueKind => MetadataAsValue
-      case LLVM.LLVMInlineAsmValueKind => InlineAsm
-      case LLVM.LLVMInstructionValueKind => Instruction
+      case LLVMArgumentValueKind => Argument
+      case LLVMBasicBlockValueKind => BasicBlock
+      case LLVMMemoryUseValueKind => MemoryUse
+      case LLVMMemoryDefValueKind => MemoryDef
+      case LLVMMemoryPhiValueKind => MemoryPhi
+      case LLVMFunctionValueKind => Function
+      case LLVMGlobalAliasValueKind => GlobalAlias
+      case LLVMGlobalIFuncValueKind => GlobalIFunc
+      case LLVMGlobalVariableValueKind => GlobalVariable
+      case LLVMBlockAddressValueKind => BlockAddress
+      case LLVMConstantExprValueKind => ConstantExpr
+      case LLVMConstantArrayValueKind => ConstantArray
+      case LLVMConstantStructValueKind => ConstantStruct
+      case LLVMConstantVectorValueKind => ConstantVector
+      case LLVMUndefValueValueKind => UndefValue
+      case LLVMConstantAggregateZeroValueKind => ConstantAggregateZero
+      case LLVMConstantDataArrayValueKind => ConstantDataArray
+      case LLVMConstantDataVectorValueKind => ConstantDataVector
+      case LLVMConstantIntValueKind => ConstantInt
+      case LLVMConstantFPValueKind => ConstantFP
+      case LLVMConstantPointerNullValueKind => ConstantPointerNull
+      case LLVMConstantTokenNoneValueKind => ConstantTokenNone
+      case LLVMMetadataAsValueValueKind => MetadataAsValue
+      case LLVMInlineAsmValueKind => InlineAsm
+      case LLVMInstructionValueKind => Instruction
       case _ => Unknown(id)
     }
 
-    case object Argument extends Kind(LLVM.LLVMArgumentValueKind)
+    case object Argument extends Kind(LLVMArgumentValueKind)
 
-    case object BasicBlock extends Kind(LLVM.LLVMBasicBlockValueKind)
+    case object BasicBlock extends Kind(LLVMBasicBlockValueKind)
 
-    case object MemoryUse extends Kind(LLVM.LLVMMemoryUseValueKind)
+    case object MemoryUse extends Kind(LLVMMemoryUseValueKind)
 
-    case object MemoryDef extends Kind(LLVM.LLVMMemoryDefValueKind)
+    case object MemoryDef extends Kind(LLVMMemoryDefValueKind)
 
-    case object MemoryPhi extends Kind(LLVM.LLVMMemoryPhiValueKind)
+    case object MemoryPhi extends Kind(LLVMMemoryPhiValueKind)
 
-    case object Function extends Kind(LLVM.LLVMFunctionValueKind)
+    case object Function extends Kind(LLVMFunctionValueKind)
 
-    case object GlobalAlias extends Kind(LLVM.LLVMGlobalAliasValueKind)
+    case object GlobalAlias extends Kind(LLVMGlobalAliasValueKind)
 
-    case object GlobalIFunc extends Kind(LLVM.LLVMGlobalIFuncValueKind)
+    case object GlobalIFunc extends Kind(LLVMGlobalIFuncValueKind)
 
-    case object GlobalVariable extends Kind(LLVM.LLVMGlobalVariableValueKind)
+    case object GlobalVariable extends Kind(LLVMGlobalVariableValueKind)
 
-    case object BlockAddress extends Kind(LLVM.LLVMBlockAddressValueKind)
+    case object BlockAddress extends Kind(LLVMBlockAddressValueKind)
 
-    case object ConstantExpr extends Kind(LLVM.LLVMConstantExprValueKind)
+    case object ConstantExpr extends Kind(LLVMConstantExprValueKind)
 
-    case object ConstantArray extends Kind(LLVM.LLVMConstantArrayValueKind)
+    case object ConstantArray extends Kind(LLVMConstantArrayValueKind)
 
-    case object ConstantStruct extends Kind(LLVM.LLVMConstantStructValueKind)
+    case object ConstantStruct extends Kind(LLVMConstantStructValueKind)
 
-    case object ConstantVector extends Kind(LLVM.LLVMConstantVectorValueKind)
+    case object ConstantVector extends Kind(LLVMConstantVectorValueKind)
 
-    case object UndefValue extends Kind(LLVM.LLVMUndefValueValueKind)
+    case object UndefValue extends Kind(LLVMUndefValueValueKind)
 
-    case object ConstantAggregateZero extends Kind(LLVM.LLVMConstantAggregateZeroValueKind)
+    case object ConstantAggregateZero extends Kind(LLVMConstantAggregateZeroValueKind)
 
-    case object ConstantDataArray extends Kind(LLVM.LLVMConstantDataArrayValueKind)
+    case object ConstantDataArray extends Kind(LLVMConstantDataArrayValueKind)
 
-    case object ConstantDataVector extends Kind(LLVM.LLVMConstantDataVectorValueKind)
+    case object ConstantDataVector extends Kind(LLVMConstantDataVectorValueKind)
 
-    case object ConstantInt extends Kind(LLVM.LLVMConstantIntValueKind)
+    case object ConstantInt extends Kind(LLVMConstantIntValueKind)
 
-    case object ConstantFP extends Kind(LLVM.LLVMConstantFPValueKind)
+    case object ConstantFP extends Kind(LLVMConstantFPValueKind)
 
-    case object ConstantPointerNull extends Kind(LLVM.LLVMConstantPointerNullValueKind)
+    case object ConstantPointerNull extends Kind(LLVMConstantPointerNullValueKind)
 
-    case object ConstantTokenNone extends Kind(LLVM.LLVMConstantTokenNoneValueKind)
+    case object ConstantTokenNone extends Kind(LLVMConstantTokenNoneValueKind)
 
-    case object MetadataAsValue extends Kind(LLVM.LLVMMetadataAsValueValueKind)
+    case object MetadataAsValue extends Kind(LLVMMetadataAsValueValueKind)
 
-    case object InlineAsm extends Kind(LLVM.LLVMInlineAsmValueKind)
+    case object InlineAsm extends Kind(LLVMInlineAsmValueKind)
 
-    case object Instruction extends Kind(LLVM.LLVMInstructionValueKind)
+    case object Instruction extends Kind(LLVMInstructionValueKind)
 
     case class Unknown(override val id: Int) extends Kind(id)
 

@@ -2,27 +2,28 @@ package org.glavo.llvm.core
 
 import java.util.Objects
 
-import org.bytedeco.javacpp.{LLVM, PointerPointer}
+import org.bytedeco.javacpp.PointerPointer
+import org.bytedeco.javacpp.LLVM._
 
 import scala.annotation.switch
 
-abstract case class Type(delegate: LLVM.LLVMTypeRef, var _context: Context) {
-  def this(delegate: LLVM.LLVMTypeRef) {
+abstract case class Type(delegate: LLVMTypeRef, var _context: Context) {
+  def this(delegate: LLVMTypeRef) {
     this(delegate, null)
   }
 
   Objects.requireNonNull(delegate)
 
-  lazy val kind: Type.Kind = Type.Kind(LLVM.LLVMGetTypeKind(delegate))
+  lazy val kind: Type.Kind = Type.Kind(LLVMGetTypeKind(delegate))
 
   lazy val context: Context = {
     if (_context != null)
       _context
     else
-      new Context(Objects.requireNonNull(LLVM.LLVMGetTypeContext(delegate)))
+      new Context(Objects.requireNonNull(LLVMGetTypeContext(delegate)))
   }
 
-  lazy val isSized: Boolean = LLVM.LLVMTypeIsSized(delegate) != 0
+  lazy val isSized: Boolean = LLVMTypeIsSized(delegate) != 0
 
   def apply(paramTypes: Type*): Type.Function = Type.function(this, paramTypes)
 
@@ -33,9 +34,9 @@ abstract case class Type(delegate: LLVM.LLVMTypeRef, var _context: Context) {
   def *(addressSpace: Int): Type.Pointer = Type.Pointer(this, addressSpace)
 
   override def toString: String = {
-    val bs = LLVM.LLVMPrintTypeToString(delegate)
-    val s = bs.getString("UTF-8")
-    LLVM.LLVMDisposeMessage(bs)
+    val bs = LLVMPrintTypeToString(delegate)
+    val s = bs.getString(org.glavo.llvm.LLVMEncoding)
+    LLVMDisposeMessage(bs)
     s"Type($s)"
   }
 }
@@ -47,89 +48,89 @@ object Type {
   object Kind {
 
     def apply(id: Int): Kind = (id: @switch) match {
-      case LLVM.LLVMVoidTypeKind => Void
-      case LLVM.LLVMHalfTypeKind => Half
-      case LLVM.LLVMFloatTypeKind => Float
-      case LLVM.LLVMDoubleTypeKind => Double
-      case LLVM.LLVMX86_FP80TypeKind => X86_FP80
-      case LLVM.LLVMFP128TypeKind => FP128
-      case LLVM.LLVMPPC_FP128TypeKind => PPC_FP128
-      case LLVM.LLVMLabelTypeKind => Label
-      case LLVM.LLVMIntegerTypeKind => Integer
-      case LLVM.LLVMFunctionTypeKind => Function
-      case LLVM.LLVMStructTypeKind => Struct
-      case LLVM.LLVMArrayTypeKind => Array
-      case LLVM.LLVMPointerTypeKind => Pointer
-      case LLVM.LLVMVectorTypeKind => Vector
-      case LLVM.LLVMMetadataTypeKind => Metadata
-      case LLVM.LLVMX86_MMXTypeKind => X86_FP80
-      case LLVM.LLVMTokenTypeKind => Token
+      case LLVMVoidTypeKind => Void
+      case LLVMHalfTypeKind => Half
+      case LLVMFloatTypeKind => Float
+      case LLVMDoubleTypeKind => Double
+      case LLVMX86_FP80TypeKind => X86_FP80
+      case LLVMFP128TypeKind => FP128
+      case LLVMPPC_FP128TypeKind => PPC_FP128
+      case LLVMLabelTypeKind => Label
+      case LLVMIntegerTypeKind => Integer
+      case LLVMFunctionTypeKind => Function
+      case LLVMStructTypeKind => Struct
+      case LLVMArrayTypeKind => Array
+      case LLVMPointerTypeKind => Pointer
+      case LLVMVectorTypeKind => Vector
+      case LLVMMetadataTypeKind => Metadata
+      case LLVMX86_MMXTypeKind => X86_FP80
+      case LLVMTokenTypeKind => Token
       case _ => Unknown(id)
     }
 
     /** type with no size */
-    case object Void extends Kind(LLVM.LLVMVoidTypeKind)
+    case object Void extends Kind(LLVMVoidTypeKind)
 
     /** 16 bit floating point type */
-    case object Half extends Kind(LLVM.LLVMHalfTypeKind)
+    case object Half extends Kind(LLVMHalfTypeKind)
 
     /** 32 bit floating point type */
-    case object Float extends Kind(LLVM.LLVMFloatTypeKind)
+    case object Float extends Kind(LLVMFloatTypeKind)
 
 
     /** 64 bit floating point type */
-    case object Double extends Kind(LLVM.LLVMDoubleTypeKind)
+    case object Double extends Kind(LLVMDoubleTypeKind)
 
 
     /** 80 bit floating point type (X87) */
-    case object X86_FP80 extends Kind(LLVM.LLVMX86_FP80TypeKind)
+    case object X86_FP80 extends Kind(LLVMX86_FP80TypeKind)
 
 
     /** 128 bit floating point type (112-bit mantissa) */
-    case object FP128 extends Kind(LLVM.LLVMFP128TypeKind)
+    case object FP128 extends Kind(LLVMFP128TypeKind)
 
 
     /** 128 bit floating point type (two 64-bits) */
-    case object PPC_FP128 extends Kind(LLVM.LLVMPPC_FP128TypeKind)
+    case object PPC_FP128 extends Kind(LLVMPPC_FP128TypeKind)
 
 
     /** Labels */
-    case object Label extends Kind(LLVM.LLVMLabelTypeKind)
+    case object Label extends Kind(LLVMLabelTypeKind)
 
 
     /** Arbitrary bit width integers */
-    case object Integer extends Kind(LLVM.LLVMIntegerTypeKind)
+    case object Integer extends Kind(LLVMIntegerTypeKind)
 
 
     /** Functions */
-    case object Function extends Kind(LLVM.LLVMFunctionTypeKind)
+    case object Function extends Kind(LLVMFunctionTypeKind)
 
     /** Structures */
-    case object Struct extends Kind(LLVM.LLVMStructTypeKind)
+    case object Struct extends Kind(LLVMStructTypeKind)
 
 
     /** Arrays */
-    case object Array extends Kind(LLVM.LLVMArrayTypeKind)
+    case object Array extends Kind(LLVMArrayTypeKind)
 
 
     /** Pointers */
-    case object Pointer extends Kind(LLVM.LLVMPointerTypeKind)
+    case object Pointer extends Kind(LLVMPointerTypeKind)
 
 
     /** SIMD 'packed' format, or other vector type */
-    case object Vector extends Kind(LLVM.LLVMVectorTypeKind)
+    case object Vector extends Kind(LLVMVectorTypeKind)
 
 
     /** Metadata */
-    case object Metadata extends Kind(LLVM.LLVMMetadataTypeKind)
+    case object Metadata extends Kind(LLVMMetadataTypeKind)
 
 
     /** X86 MMX */
-    case object MX86_MMX extends Kind(LLVM.LLVMX86_MMXTypeKind)
+    case object MX86_MMX extends Kind(LLVMX86_MMXTypeKind)
 
 
     /** Tokens */
-    case object Token extends Kind(LLVM.LLVMTokenTypeKind)
+    case object Token extends Kind(LLVMTokenTypeKind)
 
 
     case class Unknown(override val id: Int) extends Kind(id)
@@ -137,9 +138,9 @@ object Type {
   }
 
   @inline
-  def apply(typeRef: LLVM.LLVMTypeRef): Type = {
+  def apply(typeRef: LLVMTypeRef): Type = {
     Objects.requireNonNull(typeRef)
-    val k = Kind(LLVM.LLVMGetTypeKind(typeRef))
+    val k = Kind(LLVMGetTypeKind(typeRef))
     k match {
       case Kind.Integer => Integer(typeRef)
       case Kind.Half => new Half(typeRef)
@@ -162,15 +163,15 @@ object Type {
 
   // Integer Types
 
-  sealed class Integer(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate) {
-    lazy val width: Int = LLVM.LLVMGetIntTypeWidth(delegate)
+  sealed class Integer(override val delegate: LLVMTypeRef) extends Type(delegate) {
+    lazy val width: Int = LLVMGetIntTypeWidth(delegate)
   }
 
   object Integer {
-    def apply(intTypeRef: LLVM.LLVMTypeRef): Integer = {
+    def apply(intTypeRef: LLVMTypeRef): Integer = {
       Objects.requireNonNull(intTypeRef)
-      val w = LLVM.LLVMGetIntTypeWidth(intTypeRef)
-      val context = Context(LLVM.LLVMGetTypeContext(intTypeRef))
+      val w = LLVMGetIntTypeWidth(intTypeRef)
+      val context = Context(LLVMGetTypeContext(intTypeRef))
       apply(w)(context)
     }
 
@@ -181,16 +182,16 @@ object Type {
       case 32 => int32
       case 64 => int64
       case 128 => int128
-      case _ => new Integer(LLVM.LLVMIntTypeInContext(context.delegate, numBits))
+      case _ => new Integer(LLVMIntTypeInContext(context.delegate, numBits))
     }
   }
 
-  class Int1(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
+  class Int1(override val delegate: LLVMTypeRef) extends Integer(delegate)
 
   object Int1 {
-    def apply(int: LLVM.LLVMTypeRef): Int1 = {
+    def apply(int: LLVMTypeRef): Int1 = {
       Objects.requireNonNull(int)
-      if (Kind(LLVM.LLVMGetTypeKind(int)) != Kind.Integer)
+      if (Kind(LLVMGetTypeKind(int)) != Kind.Integer)
         throw new IllegalArgumentException
       new Int1(int)
     }
@@ -199,12 +200,12 @@ object Type {
       int1(context)
   }
 
-  class Int8(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
+  class Int8(override val delegate: LLVMTypeRef) extends Integer(delegate)
 
   object Int8 {
-    def apply(int: LLVM.LLVMTypeRef): Int8 = {
+    def apply(int: LLVMTypeRef): Int8 = {
       Objects.requireNonNull(int)
-      if (Kind(LLVM.LLVMGetTypeKind(int)) != Kind.Integer)
+      if (Kind(LLVMGetTypeKind(int)) != Kind.Integer)
         throw new IllegalArgumentException
       new Int8(int)
     }
@@ -213,12 +214,12 @@ object Type {
       int8(context)
   }
 
-  class Int16(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
+  class Int16(override val delegate: LLVMTypeRef) extends Integer(delegate)
 
   object Int16 {
-    def apply(int: LLVM.LLVMTypeRef): Int16 = {
+    def apply(int: LLVMTypeRef): Int16 = {
       Objects.requireNonNull(int)
-      if (Kind(LLVM.LLVMGetTypeKind(int)) != Kind.Integer)
+      if (Kind(LLVMGetTypeKind(int)) != Kind.Integer)
         throw new IllegalArgumentException
       new Int16(int)
     }
@@ -227,12 +228,12 @@ object Type {
       int16(context)
   }
 
-  class Int32(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
+  class Int32(override val delegate: LLVMTypeRef) extends Integer(delegate)
 
   object Int32 {
-    def apply(int: LLVM.LLVMTypeRef): Int32 = {
+    def apply(int: LLVMTypeRef): Int32 = {
       Objects.requireNonNull(int)
-      if (Kind(LLVM.LLVMGetTypeKind(int)) != Kind.Integer)
+      if (Kind(LLVMGetTypeKind(int)) != Kind.Integer)
         throw new IllegalArgumentException
       new Int32(int)
     }
@@ -241,12 +242,12 @@ object Type {
       int32(context)
   }
 
-  class Int64(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
+  class Int64(override val delegate: LLVMTypeRef) extends Integer(delegate)
 
   object Int64 {
-    def apply(int: LLVM.LLVMTypeRef): Int64 = {
+    def apply(int: LLVMTypeRef): Int64 = {
       Objects.requireNonNull(int)
-      if (Kind(LLVM.LLVMGetTypeKind(int)) != Kind.Integer)
+      if (Kind(LLVMGetTypeKind(int)) != Kind.Integer)
         throw new IllegalArgumentException
       new Int64(int)
     }
@@ -255,12 +256,12 @@ object Type {
       int64(context)
   }
 
-  class Int128(override val delegate: LLVM.LLVMTypeRef) extends Integer(delegate)
+  class Int128(override val delegate: LLVMTypeRef) extends Integer(delegate)
 
   object Int128 {
-    def apply(int: LLVM.LLVMTypeRef): Int128 = {
+    def apply(int: LLVMTypeRef): Int128 = {
       Objects.requireNonNull(int)
-      if (Kind(LLVM.LLVMGetTypeKind(int)) != Kind.Integer)
+      if (Kind(LLVMGetTypeKind(int)) != Kind.Integer)
         throw new IllegalArgumentException
       new Int128(int)
     }
@@ -273,31 +274,31 @@ object Type {
   def integer(numBits: Int)(implicit context: Context): Integer = Integer(numBits)(context)
 
   @inline
-  def int1(implicit context: Context): Int1 = new Int1(LLVM.LLVMInt1TypeInContext(context.delegate))
+  def int1(implicit context: Context): Int1 = new Int1(LLVMInt1TypeInContext(context.delegate))
 
   @inline
-  def int8(implicit context: Context): Int8 = new Int8(LLVM.LLVMInt8TypeInContext(context.delegate))
+  def int8(implicit context: Context): Int8 = new Int8(LLVMInt8TypeInContext(context.delegate))
 
   @inline
-  def int16(implicit context: Context): Int16 = new Int16(LLVM.LLVMInt16TypeInContext(context.delegate))
+  def int16(implicit context: Context): Int16 = new Int16(LLVMInt16TypeInContext(context.delegate))
 
   @inline
-  def int32(implicit context: Context): Int32 = new Int32(LLVM.LLVMInt32TypeInContext(context.delegate))
+  def int32(implicit context: Context): Int32 = new Int32(LLVMInt32TypeInContext(context.delegate))
 
   @inline
-  def int64(implicit context: Context): Int64 = new Int64(LLVM.LLVMInt64TypeInContext(context.delegate))
+  def int64(implicit context: Context): Int64 = new Int64(LLVMInt64TypeInContext(context.delegate))
 
   @inline
-  def int128(implicit context: Context): Int128 = new Int128(LLVM.LLVMInt128TypeInContext(context.delegate))
+  def int128(implicit context: Context): Int128 = new Int128(LLVMInt128TypeInContext(context.delegate))
 
   // Floating Types
 
-  sealed class Floating(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  sealed class Floating(override val delegate: LLVMTypeRef) extends Type(delegate)
 
   object Floating {
-    def apply(floating: LLVM.LLVMTypeRef): Floating = {
+    def apply(floating: LLVMTypeRef): Floating = {
       Objects.requireNonNull(floating)
-      Kind(LLVM.LLVMGetTypeKind(floating)) match {
+      Kind(LLVMGetTypeKind(floating)) match {
         case Kind.Half => new Half(floating)
         case Kind.Float => new Float(floating)
         case Kind.Double => new Double(floating)
@@ -309,82 +310,82 @@ object Type {
     }
   }
 
-  class Half(override val delegate: LLVM.LLVMTypeRef) extends Floating(delegate)
+  class Half(override val delegate: LLVMTypeRef) extends Floating(delegate)
 
   object Half {
-    def apply(half: LLVM.LLVMTypeRef): Half = {
+    def apply(half: LLVMTypeRef): Half = {
       Objects.requireNonNull(half)
-      if (Kind(LLVM.LLVMGetTypeKind(half)) != Kind.Half)
+      if (Kind(LLVMGetTypeKind(half)) != Kind.Half)
         throw new IllegalArgumentException
       new Half(half)
     }
 
-    def apply()(implicit context: Context): Half = new Half(LLVM.LLVMHalfTypeInContext(context.delegate))
+    def apply()(implicit context: Context): Half = new Half(LLVMHalfTypeInContext(context.delegate))
   }
 
-  class Float(override val delegate: LLVM.LLVMTypeRef) extends Floating(delegate)
+  class Float(override val delegate: LLVMTypeRef) extends Floating(delegate)
 
   object Float {
-    def apply(float: LLVM.LLVMTypeRef): Float = {
+    def apply(float: LLVMTypeRef): Float = {
       Objects.requireNonNull(float)
-      if (Kind(LLVM.LLVMGetTypeKind(float)) != Kind.Float)
+      if (Kind(LLVMGetTypeKind(float)) != Kind.Float)
         throw new IllegalArgumentException
       new Float(float)
     }
 
-    def apply()(implicit context: Context): Float = new Float(LLVM.LLVMFloatTypeInContext(context.delegate))
+    def apply()(implicit context: Context): Float = new Float(LLVMFloatTypeInContext(context.delegate))
   }
 
-  class Double(override val delegate: LLVM.LLVMTypeRef) extends Floating(delegate)
+  class Double(override val delegate: LLVMTypeRef) extends Floating(delegate)
 
   object Double {
-    def apply(double: LLVM.LLVMTypeRef): Double = {
+    def apply(double: LLVMTypeRef): Double = {
       Objects.requireNonNull(double)
-      if (Kind(LLVM.LLVMGetTypeKind(double)) != Kind.Double)
+      if (Kind(LLVMGetTypeKind(double)) != Kind.Double)
         throw new IllegalArgumentException
       new Double(double)
     }
 
-    def apply()(implicit context: Context): Double = new Double(LLVM.LLVMDoubleTypeInContext(context.delegate))
+    def apply()(implicit context: Context): Double = new Double(LLVMDoubleTypeInContext(context.delegate))
   }
 
-  class X86FP80(override val delegate: LLVM.LLVMTypeRef) extends Floating(delegate)
+  class X86FP80(override val delegate: LLVMTypeRef) extends Floating(delegate)
 
   object X86FP80 {
-    def apply(fp: LLVM.LLVMTypeRef): X86FP80 = {
+    def apply(fp: LLVMTypeRef): X86FP80 = {
       Objects.requireNonNull(fp)
-      if (Kind(LLVM.LLVMGetTypeKind(fp)) != Kind.X86_FP80)
+      if (Kind(LLVMGetTypeKind(fp)) != Kind.X86_FP80)
         throw new IllegalArgumentException
       new X86FP80(fp)
     }
 
-    def apply()(implicit context: Context): X86FP80 = new X86FP80(LLVM.LLVMX86FP80TypeInContext(context.delegate))
+    def apply()(implicit context: Context): X86FP80 = new X86FP80(LLVMX86FP80TypeInContext(context.delegate))
   }
 
-  class FP128(override val delegate: LLVM.LLVMTypeRef) extends Floating(delegate)
+  class FP128(override val delegate: LLVMTypeRef) extends Floating(delegate)
 
   object FP128 {
-    def apply(fp: LLVM.LLVMTypeRef): FP128 = {
+    def apply(fp: LLVMTypeRef): FP128 = {
       Objects.requireNonNull(fp)
-      if (Kind(LLVM.LLVMGetTypeKind(fp)) != Kind.FP128)
+      if (Kind(LLVMGetTypeKind(fp)) != Kind.FP128)
         throw new IllegalArgumentException
       new FP128(fp)
     }
 
-    def apply()(implicit context: Context): FP128 = new FP128(LLVM.LLVMFP128TypeInContext(context.delegate))
+    def apply()(implicit context: Context): FP128 = new FP128(LLVMFP128TypeInContext(context.delegate))
   }
 
-  class PPCFP128(override val delegate: LLVM.LLVMTypeRef) extends Floating(delegate)
+  class PPCFP128(override val delegate: LLVMTypeRef) extends Floating(delegate)
 
   object PPCFP128 {
-    def apply(fp: LLVM.LLVMTypeRef): PPCFP128 = {
+    def apply(fp: LLVMTypeRef): PPCFP128 = {
       Objects.requireNonNull(fp)
-      if (Kind(LLVM.LLVMGetTypeKind(fp)) != Kind.PPC_FP128)
+      if (Kind(LLVMGetTypeKind(fp)) != Kind.PPC_FP128)
         throw new IllegalArgumentException
       new PPCFP128(fp)
     }
 
-    def apply()(implicit context: Context): PPCFP128 = new PPCFP128(LLVM.LLVMPPCFP128TypeInContext(context.delegate))
+    def apply()(implicit context: Context): PPCFP128 = new PPCFP128(LLVMPPCFP128TypeInContext(context.delegate))
   }
 
   def half()(implicit context: Context): Half = Half()(context)
@@ -402,11 +403,11 @@ object Type {
   // function types
 
   class Function private[llvm](
-                                override val delegate: LLVM.LLVMTypeRef,
+                                override val delegate: LLVMTypeRef,
                                 private var _rt: Type,
                                 private var _pts: Seq[Type]
                               ) extends Type(delegate) {
-    def this(delegate: LLVM.LLVMTypeRef) {
+    def this(delegate: LLVMTypeRef) {
       this(delegate, null, null)
     }
 
@@ -414,7 +415,7 @@ object Type {
       if (_rt != null) {
         _rt
       } else {
-        _rt = Type(LLVM.LLVMGetReturnType(delegate))
+        _rt = Type(LLVMGetReturnType(delegate))
         _rt
       }
     }
@@ -423,11 +424,11 @@ object Type {
       if (_pts != null)
         _pts
       else {
-        val i = LLVM.LLVMCountParamTypes(delegate)
+        val i = LLVMCountParamTypes(delegate)
         if (i != 0) {
-          val pp = new PointerPointer[LLVM.LLVMTypeRef](i)
-          LLVM.LLVMGetParamTypes(delegate, pp)
-          _pts = (0 until i).map(index => Type(pp.get(classOf[LLVM.LLVMTypeRef], index)))
+          val pp = new PointerPointer[LLVMTypeRef](i)
+          LLVMGetParamTypes(delegate, pp)
+          _pts = (0 until i).map(index => Type(pp.get(classOf[LLVMTypeRef], index)))
           _pts
         } else {
           _pts = Seq()
@@ -436,11 +437,11 @@ object Type {
       }
     }
 
-    lazy val isVararg: Boolean = LLVM.LLVMIsFunctionVarArg(delegate) != 0
+    lazy val isVararg: Boolean = LLVMIsFunctionVarArg(delegate) != 0
   }
 
   object Function {
-    def apply(funTypeRef: LLVM.LLVMTypeRef): Function = {
+    def apply(funTypeRef: LLVMTypeRef): Function = {
       val r = new Function(funTypeRef)
       if (r.kind == Kind.Function)
         r
@@ -458,13 +459,13 @@ object Type {
 
     if (ps.length != 0)
       new Function(
-        LLVM.LLVMFunctionType(returnType.delegate, ps(0), ps.length, if (isVarargs) 1 else 0),
+        LLVMFunctionType(returnType.delegate, ps(0), ps.length, if (isVarargs) 1 else 0),
         returnType,
         paramTypes
       )
     else
       new Function(
-        LLVM.LLVMFunctionType(returnType.delegate, new scala.Array[LLVM.LLVMTypeRef](1)(0), 0, if (isVarargs) 1 else 0),
+        LLVMFunctionType(returnType.delegate, new scala.Array[LLVMTypeRef](1)(0), 0, if (isVarargs) 1 else 0),
         returnType,
         paramTypes
       )
@@ -472,35 +473,35 @@ object Type {
 
   // Structure Types
 
-  class Struct(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate) {
-    def elementCount: Int = LLVM.LLVMCountStructElementTypes(delegate)
+  class Struct(override val delegate: LLVMTypeRef) extends Type(delegate) {
+    def elementCount: Int = LLVMCountStructElementTypes(delegate)
 
-    def elementAt(idx: Int): Type = Type(LLVM.LLVMStructGetTypeAtIndex(delegate, idx))
+    def elementAt(idx: Int): Type = Type(LLVMStructGetTypeAtIndex(delegate, idx))
 
     def elementTypes: Seq[Type] = {
       val count = elementCount
-      val pp = new PointerPointer[LLVM.LLVMTypeRef](count)
-      LLVM.LLVMGetStructElementTypes(delegate, pp)
-      (0 until count).map(idx => Type(pp.get(classOf[LLVM.LLVMTypeRef], idx)))
+      val pp = new PointerPointer[LLVMTypeRef](count)
+      LLVMGetStructElementTypes(delegate, pp)
+      (0 until count).map(idx => Type(pp.get(classOf[LLVMTypeRef], idx)))
     }
 
-    def isPacked: Boolean = LLVM.LLVMIsPackedStruct(delegate) != 0
+    def isPacked: Boolean = LLVMIsPackedStruct(delegate) != 0
 
     def body(elementTypes: Seq[Type], packed: Boolean = false): Struct.this.type = {
-      val arr: scala.Array[LLVM.LLVMTypeRef] = elementTypes.view.map(_.delegate).toArray
+      val arr: scala.Array[LLVMTypeRef] = elementTypes.view.map(_.delegate).toArray
       if (arr.length != 0) {
-        val pp = new PointerPointer[LLVM.LLVMTypeRef](arr.length)
+        val pp = new PointerPointer[LLVMTypeRef](arr.length)
         pp.put(arr: _*)
-        LLVM.LLVMStructSetBody(
+        LLVMStructSetBody(
           delegate,
           pp,
           arr.length,
           if (packed) 1 else 0)
       }
       else
-        LLVM.LLVMStructSetBody(
+        LLVMStructSetBody(
           delegate,
-          new scala.Array[LLVM.LLVMTypeRef](1)(0),
+          new scala.Array[LLVMTypeRef](1)(0),
           arr.length,
           if (packed) 1 else 0)
       this
@@ -508,9 +509,9 @@ object Type {
   }
 
   object Struct {
-    def apply(structTypeRef: LLVM.LLVMTypeRef): Struct = {
+    def apply(structTypeRef: LLVMTypeRef): Struct = {
       Objects.requireNonNull(structTypeRef)
-      if (Kind(LLVM.LLVMGetTypeKind(structTypeRef)) != Kind.Struct)
+      if (Kind(LLVMGetTypeKind(structTypeRef)) != Kind.Struct)
         throw new IllegalArgumentException
 
       new Struct(structTypeRef)
@@ -518,24 +519,24 @@ object Type {
 
     def apply(name: String)(implicit context: Context): Struct = {
       Objects.requireNonNull(name)
-      new Struct(LLVM.LLVMStructCreateNamed(context.delegate, name))
+      new Struct(LLVMStructCreateNamed(context.delegate, name))
     }
 
     def apply(elementTypes: Seq[Type], packed: Boolean = false)(implicit context: Context): Struct = {
-      val arr: scala.Array[LLVM.LLVMTypeRef] = elementTypes.view.map(_.delegate).toArray
+      val arr: scala.Array[LLVMTypeRef] = elementTypes.view.map(_.delegate).toArray
       if (arr.length != 0) {
-        val pp = new PointerPointer[LLVM.LLVMTypeRef](arr.length)
+        val pp = new PointerPointer[LLVMTypeRef](arr.length)
         pp.put(arr: _*)
-        new Struct(LLVM.LLVMStructTypeInContext(
+        new Struct(LLVMStructTypeInContext(
           context.delegate,
           pp,
           arr.length,
           if (packed) 1 else 0))
       }
       else
-        new Struct(LLVM.LLVMStructTypeInContext(
+        new Struct(LLVMStructTypeInContext(
           context.delegate,
-          new scala.Array[LLVM.LLVMTypeRef](1)(0),
+          new scala.Array[LLVMTypeRef](1)(0),
           arr.length,
           if (packed) 1 else 0))
     }
@@ -546,14 +547,14 @@ object Type {
 
   // Sequential Types
 
-  abstract sealed class Sequential(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate) {
-    lazy val elementType: Type = Type(LLVM.LLVMGetElementType(delegate))
+  abstract sealed class Sequential(override val delegate: LLVMTypeRef) extends Type(delegate) {
+    lazy val elementType: Type = Type(LLVMGetElementType(delegate))
   }
 
   object Sequential {
-    def apply(seqTypeRef: LLVM.LLVMTypeRef): Sequential = {
+    def apply(seqTypeRef: LLVMTypeRef): Sequential = {
       Objects.requireNonNull(seqTypeRef)
-      Kind(LLVM.LLVMGetTypeKind(seqTypeRef)) match {
+      Kind(LLVMGetTypeKind(seqTypeRef)) match {
         case Kind.Array => new Array(seqTypeRef)
         case Kind.Pointer => new Pointer(seqTypeRef)
         case Kind.Vector => new Vector(seqTypeRef)
@@ -562,57 +563,57 @@ object Type {
     }
   }
 
-  class Array(override val delegate: LLVM.LLVMTypeRef) extends Sequential(delegate) {
-    lazy val length: Int = LLVM.LLVMGetArrayLength(delegate)
+  class Array(override val delegate: LLVMTypeRef) extends Sequential(delegate) {
+    lazy val length: Int = LLVMGetArrayLength(delegate)
   }
 
   object Array {
-    def apply(arrTypeRef: LLVM.LLVMTypeRef): Array = {
+    def apply(arrTypeRef: LLVMTypeRef): Array = {
       Objects.requireNonNull(arrTypeRef)
-      if (Kind(LLVM.LLVMGetTypeKind(arrTypeRef)) != Kind.Array)
+      if (Kind(LLVMGetTypeKind(arrTypeRef)) != Kind.Array)
         throw new IllegalArgumentException
       new Array(arrTypeRef)
     }
 
     def apply(elementType: Type, elementCount: Int): Array = {
       Objects.requireNonNull(elementType)
-      new Array(LLVM.LLVMArrayType(elementType.delegate, elementCount))
+      new Array(LLVMArrayType(elementType.delegate, elementCount))
     }
   }
 
-  class Pointer(override val delegate: LLVM.LLVMTypeRef) extends Sequential(delegate) {
-    lazy val addressSpace: Int = LLVM.LLVMGetPointerAddressSpace(delegate)
+  class Pointer(override val delegate: LLVMTypeRef) extends Sequential(delegate) {
+    lazy val addressSpace: Int = LLVMGetPointerAddressSpace(delegate)
   }
 
   object Pointer {
-    def apply(pointerTypeRef: LLVM.LLVMTypeRef): Pointer = {
+    def apply(pointerTypeRef: LLVMTypeRef): Pointer = {
       Objects.requireNonNull(pointerTypeRef)
-      if (Kind(LLVM.LLVMGetTypeKind(pointerTypeRef)) != Kind.Pointer)
+      if (Kind(LLVMGetTypeKind(pointerTypeRef)) != Kind.Pointer)
         throw new IllegalArgumentException
       new Pointer(pointerTypeRef)
     }
 
     def apply(elementType: Type, addressSpace: Int = 1): Pointer = {
       Objects.requireNonNull(elementType)
-      new Pointer(LLVM.LLVMVectorType(elementType.delegate, addressSpace))
+      new Pointer(LLVMVectorType(elementType.delegate, addressSpace))
     }
   }
 
-  class Vector(override val delegate: LLVM.LLVMTypeRef) extends Sequential(delegate) {
-    lazy val vectorSize: Int = LLVM.LLVMGetVectorSize(delegate)
+  class Vector(override val delegate: LLVMTypeRef) extends Sequential(delegate) {
+    lazy val vectorSize: Int = LLVMGetVectorSize(delegate)
   }
 
   object Vector {
-    def apply(vectorTypeRef: LLVM.LLVMTypeRef): Vector = {
+    def apply(vectorTypeRef: LLVMTypeRef): Vector = {
       Objects.requireNonNull(vectorTypeRef)
-      if (Kind(LLVM.LLVMGetTypeKind(vectorTypeRef)) != Kind.Vector)
+      if (Kind(LLVMGetTypeKind(vectorTypeRef)) != Kind.Vector)
         throw new IllegalArgumentException
       new Vector(vectorTypeRef)
     }
 
     def apply(elementType: Type, elementCount: Int): Vector = {
       Objects.requireNonNull(elementType)
-      new Vector(LLVM.LLVMVectorType(elementType.delegate, elementCount))
+      new Vector(LLVMVectorType(elementType.delegate, elementCount))
     }
   }
 
@@ -624,32 +625,32 @@ object Type {
 
   // Other Types
 
-  class Label(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  class Label(override val delegate: LLVMTypeRef) extends Type(delegate)
 
   object Label {
-    def apply(labelTypeRef: LLVM.LLVMTypeRef): Label = {
+    def apply(labelTypeRef: LLVMTypeRef): Label = {
       Objects.requireNonNull(labelTypeRef)
-      if (Kind(LLVM.LLVMGetTypeKind(labelTypeRef)) != Kind.Label)
+      if (Kind(LLVMGetTypeKind(labelTypeRef)) != Kind.Label)
         throw new IllegalArgumentException
       new Label(labelTypeRef)
     }
 
     def apply()(implicit context: Context): Label =
-      new Label(LLVM.LLVMLabelTypeInContext(context.delegate))
+      new Label(LLVMLabelTypeInContext(context.delegate))
   }
 
-  class Void(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  class Void(override val delegate: LLVMTypeRef) extends Type(delegate)
 
   object Void {
-    def apply(labelTypeRef: LLVM.LLVMTypeRef): Void = {
+    def apply(labelTypeRef: LLVMTypeRef): Void = {
       Objects.requireNonNull(labelTypeRef)
-      if (Kind(LLVM.LLVMGetTypeKind(labelTypeRef)) != Kind.Void)
+      if (Kind(LLVMGetTypeKind(labelTypeRef)) != Kind.Void)
         throw new IllegalArgumentException
       new Void(labelTypeRef)
     }
 
     def apply()(implicit context: Context): Void =
-      new Void(LLVM.LLVMVoidTypeInContext(context.delegate))
+      new Void(LLVMVoidTypeInContext(context.delegate))
   }
 
   def label(implicit context: Context): Label = Label()(context)
@@ -657,10 +658,10 @@ object Type {
   def void()(implicit context: Context): Void = Void()(context)
 
 
-  class Unknown(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
+  class Unknown(override val delegate: LLVMTypeRef) extends Type(delegate)
 
   object Unknown {
-    def apply(typeRef: LLVM.LLVMTypeRef): Unknown = new Unknown(typeRef)
+    def apply(typeRef: LLVMTypeRef): Unknown = new Unknown(typeRef)
   }
 
 }
