@@ -1,4 +1,4 @@
-package org.glavo.llvm
+package org.glavo.llvm.core
 
 import java.util.Objects
 

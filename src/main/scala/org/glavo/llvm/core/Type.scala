@@ -1,11 +1,10 @@
-package org.glavo.llvm
+package org.glavo.llvm.core
 
 import java.util.Objects
 
 import org.bytedeco.javacpp.{LLVM, PointerPointer}
 
 import scala.annotation.switch
-import scala.collection.AbstractSeq
 
 abstract case class Type(delegate: LLVM.LLVMTypeRef, var _context: Context) {
   def this(delegate: LLVM.LLVMTypeRef) {

@@ -1,4 +1,4 @@
-package org.glavo.llvm
+package org.glavo.llvm.core
 
 import org.bytedeco.javacpp.LLVM
 

@@ -1,4 +1,4 @@
-package org.glavo.llvm
+package org.glavo.llvm.core
 
 import java.util.Objects
 
@@ -7,7 +7,9 @@ import org.bytedeco.javacpp.LLVM
 case class Value(delegate: LLVM.LLVMValueRef) {
   Objects.requireNonNull(delegate)
 
+  def kind: Value.Kind = Value.Kind(LLVM.LLVMGetValueKind(delegate))
 
+  def name: String = LLVM.LLVMGetValueName(delegate).getString("UTF-8")
 }
 
 object Value {
