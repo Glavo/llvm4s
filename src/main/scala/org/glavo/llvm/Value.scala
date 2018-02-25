@@ -16,6 +16,35 @@ object Value {
 
   object Kind {
 
+    def apply(id: Int): Kind = id match {
+      case LLVM.LLVMArgumentValueKind => Argument
+      case LLVM.LLVMBasicBlockValueKind => BasicBlock
+      case LLVM.LLVMMemoryUseValueKind => MemoryUse
+      case LLVM.LLVMMemoryDefValueKind => MemoryDef
+      case LLVM.LLVMMemoryPhiValueKind => MemoryPhi
+      case LLVM.LLVMFunctionValueKind => Function
+      case LLVM.LLVMGlobalAliasValueKind => GlobalAlias
+      case LLVM.LLVMGlobalIFuncValueKind => GlobalIFunc
+      case LLVM.LLVMGlobalVariableValueKind => GlobalVariable
+      case LLVM.LLVMBlockAddressValueKind => BlockAddress
+      case LLVM.LLVMConstantExprValueKind => ConstantExpr
+      case LLVM.LLVMConstantArrayValueKind => ConstantArray
+      case LLVM.LLVMConstantStructValueKind => ConstantStruct
+      case LLVM.LLVMConstantVectorValueKind => ConstantVector
+      case LLVM.LLVMUndefValueValueKind => UndefValue
+      case LLVM.LLVMConstantAggregateZeroValueKind => ConstantAggregateZero
+      case LLVM.LLVMConstantDataArrayValueKind => ConstantDataArray
+      case LLVM.LLVMConstantDataVectorValueKind => ConstantDataVector
+      case LLVM.LLVMConstantIntValueKind => ConstantInt
+      case LLVM.LLVMConstantFPValueKind => ConstantFP
+      case LLVM.LLVMConstantPointerNullValueKind => ConstantPointerNull
+      case LLVM.LLVMConstantTokenNoneValueKind => ConstantTokenNone
+      case LLVM.LLVMMetadataAsValueValueKind => MetadataAsValue
+      case LLVM.LLVMInlineAsmValueKind => InlineAsm
+      case LLVM.LLVMInstructionValueKind => Instruction
+      case _ => Unknown(id)
+    }
+
     case object Argument extends Kind(LLVM.LLVMArgumentValueKind)
 
     case object BasicBlock extends Kind(LLVM.LLVMBasicBlockValueKind)
@@ -30,7 +59,7 @@ object Value {
 
     case object GlobalAlias extends Kind(LLVM.LLVMGlobalAliasValueKind)
 
-    case object GlobalFunc extends Kind(LLVM.LLVMGlobalIFuncValueKind)
+    case object GlobalIFunc extends Kind(LLVM.LLVMGlobalIFuncValueKind)
 
     case object GlobalVariable extends Kind(LLVM.LLVMGlobalVariableValueKind)
 
@@ -56,7 +85,7 @@ object Value {
 
     case object ConstantFP extends Kind(LLVM.LLVMConstantFPValueKind)
 
-    case object ConstantPointer extends Kind(LLVM.LLVMConstantPointerNullValueKind)
+    case object ConstantPointerNull extends Kind(LLVM.LLVMConstantPointerNullValueKind)
 
     case object ConstantTokenNone extends Kind(LLVM.LLVMConstantTokenNoneValueKind)
 
