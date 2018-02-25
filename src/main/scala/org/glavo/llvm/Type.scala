@@ -2,12 +2,25 @@ package org.glavo.llvm
 
 import java.util.Objects
 
-import org.bytedeco.javacpp.LLVM
+import org.bytedeco.javacpp.{LLVM, PointerPointer}
+
+import scala.annotation.switch
 
 case class Type(delegate: LLVM.LLVMTypeRef) {
-  def context: Context =
+
+  lazy val kind: Type.Kind = Type.Kind(LLVM.LLVMGetTypeKind(delegate))
+
+  lazy val context: Context =
     new Context(Objects.requireNonNull(LLVM.LLVMGetTypeContext(delegate)))
 
+  def isFunction: Boolean = kind == Type.Kind.Function
+
+  override def toString: String = {
+    val bs = LLVM.LLVMPrintTypeToString(delegate)
+    val s = bs.getString("UTF-8")
+    LLVM.LLVMDisposeMessage(bs)
+    s"Type($s)"
+  }
 }
 
 object Type {
@@ -15,6 +28,27 @@ object Type {
   sealed abstract class Kind(val id: Int)
 
   object Kind {
+
+    def apply(id: Int): Kind = (id: @switch) match {
+      case LLVM.LLVMVoidTypeKind => Void
+      case LLVM.LLVMHalfTypeKind => Half
+      case LLVM.LLVMFloatTypeKind => Float
+      case LLVM.LLVMDoubleTypeKind => Double
+      case LLVM.LLVMX86_FP80TypeKind => X86_FP80
+      case LLVM.LLVMFP128TypeKind => FP128
+      case LLVM.LLVMPPC_FP128TypeKind => PPC_FP128
+      case LLVM.LLVMLabelTypeKind => Label
+      case LLVM.LLVMIntegerTypeKind => Integer
+      case LLVM.LLVMFunctionTypeKind => Function
+      case LLVM.LLVMStructTypeKind => Struct
+      case LLVM.LLVMArrayTypeKind => Array
+      case LLVM.LLVMPointerTypeKind => Pointer
+      case LLVM.LLVMVectorTypeKind => Vector
+      case LLVM.LLVMMetadataTypeKind => Metadata
+      case LLVM.LLVMX86_MMXTypeKind => X86_FP80
+      case LLVM.LLVMTokenTypeKind => Token
+      case _ => Unknown(id)
+    }
 
     /** type with no size */
     case object Void extends Kind(LLVM.LLVMVoidTypeKind)
@@ -79,6 +113,9 @@ object Type {
 
     /** Tokens */
     case object Token extends Kind(LLVM.LLVMTokenTypeKind)
+
+
+    case class Unknown(override val id: Int) extends Kind(id)
 
   }
 
@@ -178,6 +215,10 @@ object Type {
     Objects.requireNonNull(returnType)
     Objects.requireNonNull(paramTypes)
     val ps = paramTypes.view.map(_.delegate).toArray
-    Function(LLVM.LLVMFunctionType(returnType.delegate, ps(0), ps.length, if (isVarargs) 1 else 0))
+
+    if (ps.length != 0)
+      new Function(LLVM.LLVMFunctionType(returnType.delegate, ps(0), ps.length, if (isVarargs) 1 else 0))
+    else
+      new Function(LLVM.LLVMFunctionType(returnType.delegate, new Array[LLVM.LLVMTypeRef](1)(0), 0, if (isVarargs) 1 else 0))
   }
 }
