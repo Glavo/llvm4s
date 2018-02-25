@@ -489,12 +489,15 @@ object Type {
 
     def body(elementTypes: Seq[Type], packed: Boolean = false): Struct.this.type = {
       val arr: scala.Array[LLVM.LLVMTypeRef] = elementTypes.view.map(_.delegate).toArray
-      if (arr.length != 0)
+      if (arr.length != 0) {
+        val pp = new PointerPointer[LLVM.LLVMTypeRef](arr.length)
+        pp.put(arr: _*)
         LLVM.LLVMStructSetBody(
           delegate,
-          arr(0),
+          pp,
           arr.length,
           if (packed) 1 else 0)
+      }
       else
         LLVM.LLVMStructSetBody(
           delegate,
@@ -521,12 +524,15 @@ object Type {
 
     def apply(elementTypes: Seq[Type], packed: Boolean = false)(implicit context: Context): Struct = {
       val arr: scala.Array[LLVM.LLVMTypeRef] = elementTypes.view.map(_.delegate).toArray
-      if (arr.length != 0)
+      if (arr.length != 0) {
+        val pp = new PointerPointer[LLVM.LLVMTypeRef](arr.length)
+        pp.put(arr: _*)
         new Struct(LLVM.LLVMStructTypeInContext(
           context.delegate,
-          arr(0),
+          pp,
           arr.length,
           if (packed) 1 else 0))
+      }
       else
         new Struct(LLVM.LLVMStructTypeInContext(
           context.delegate,
@@ -650,6 +656,7 @@ object Type {
   def label(implicit context: Context): Label = Label()(context)
 
   def void()(implicit context: Context): Void = Void()(context)
+
 
   class Unknown(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
 
