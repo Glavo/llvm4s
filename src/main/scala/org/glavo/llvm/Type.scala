@@ -5,9 +5,83 @@ import java.util.Objects
 import org.bytedeco.javacpp.LLVM
 
 case class Type(delegate: LLVM.LLVMTypeRef) {
+  def context: Context =
+    new Context(Objects.requireNonNull(LLVM.LLVMGetTypeContext(delegate)))
+
 }
 
 object Type {
+
+  sealed abstract class Kind(val id: Int)
+
+  object Kind {
+
+    /** type with no size */
+    case object Void extends Kind(LLVM.LLVMVoidTypeKind)
+
+    /** 16 bit floating point type */
+    case object Half extends Kind(LLVM.LLVMHalfTypeKind)
+
+    /** 32 bit floating point type */
+    case object Float extends Kind(LLVM.LLVMFloatTypeKind)
+
+
+    /** 64 bit floating point type */
+    case object Double extends Kind(LLVM.LLVMDoubleTypeKind)
+
+
+    /** 80 bit floating point type (X87) */
+    case object X86_FP80 extends Kind(LLVM.LLVMX86_FP80TypeKind)
+
+
+    /** 128 bit floating point type (112-bit mantissa) */
+    case object FP128 extends Kind(LLVM.LLVMFP128TypeKind)
+
+
+    /** 128 bit floating point type (two 64-bits) */
+    case object PPC_FP128 extends Kind(LLVM.LLVMPPC_FP128TypeKind)
+
+
+    /** Labels */
+    case object Label extends Kind(LLVM.LLVMLabelTypeKind)
+
+
+    /** Arbitrary bit width integers */
+    case object Integer extends Kind(LLVM.LLVMIntegerTypeKind)
+
+
+    /** Functions */
+    case object Function extends Kind(LLVM.LLVMFunctionTypeKind)
+
+    /** Structures */
+    case object Struct extends Kind(LLVM.LLVMStructTypeKind)
+
+
+    /** Arrays */
+    case object Array extends Kind(LLVM.LLVMArrayTypeKind)
+
+
+    /** Pointers */
+    case object Pointer extends Kind(LLVM.LLVMPointerTypeKind)
+
+
+    /** SIMD 'packed' format, or other vector type */
+    case object Vector extends Kind(LLVM.LLVMVectorTypeKind)
+
+
+    /** Metadata */
+    case object Metadata extends Kind(LLVM.LLVMMetadataTypeKind)
+
+
+    /** X86 MMX */
+    case object MX86_MMX extends Kind(LLVM.LLVMX86_MMXTypeKind)
+
+
+    /** Tokens */
+    case object Token extends Kind(LLVM.LLVMTokenTypeKind)
+
+  }
+
   @inline
   def apply(typeRef: LLVM.LLVMTypeRef): Type =
     if (typeRef != null) new Type(typeRef) else null
