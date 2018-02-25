@@ -154,6 +154,8 @@ object Type {
       case Kind.Array => new Array(typeRef)
       case Kind.Pointer => new Pointer(typeRef)
       case Kind.Vector => new Vector(typeRef)
+      case Kind.Label => new Label(typeRef)
+      case Kind.Void => new Label(typeRef)
       //todo
       case _ => Unknown(typeRef)
     }
