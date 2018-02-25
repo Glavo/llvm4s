@@ -11,13 +11,22 @@ case class Value(delegate: LLVMValueRef) {
 
   def name: String = LLVMGetValueName(delegate).getString(org.glavo.llvm.LLVMEncoding)
 
-  def name_=(name: String): Unit = {
-    LLVMSetValueName(delegate, name)
-  }
+  def name_=(name: String): Unit = LLVMSetValueName(delegate, name)
+
 
   def isConstant: Boolean = LLVMIsConstant(delegate) != 0
 
   def isUndef: Boolean = LLVMIsUndef(delegate) != 0
+
+  def getType: Type = Type(LLVMTypeOf(delegate))
+
+  def operand(index: Int): Value = Value(LLVMGetOperand(delegate, index))
+
+  def operandUse(index: Int): Use = Use(LLVMGetOperandUse(delegate, index))
+
+  def firstUse: Use = Use(LLVMGetFirstUse(delegate))
+
+  def numOperands: Int = LLVMGetNumOperands(delegate)
 
   override def toString: String = {
     val bs = LLVMPrintValueToString(delegate)
