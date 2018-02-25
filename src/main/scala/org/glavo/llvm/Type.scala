@@ -459,7 +459,41 @@ object Type {
 
   // Structure Types
 
+  class Struct(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
 
+  object Struct {
+    def apply(structTypeRef: LLVM.LLVMTypeRef): Struct = {
+      Objects.requireNonNull(structTypeRef)
+      if (Kind(LLVM.LLVMGetTypeKind(structTypeRef)) != Kind.Struct)
+        throw new IllegalArgumentException
+
+      new Struct(structTypeRef)
+    }
+
+    def apply(name: String)(implicit context: Context): Struct = {
+      Objects.requireNonNull(name)
+      new Struct(LLVM.LLVMStructCreateNamed(context.delegate, name))
+    }
+
+    def apply(elementTypes: Seq[Type], packed: Boolean = false)(implicit context: Context): Struct = {
+      val arr: Array[LLVM.LLVMTypeRef] = elementTypes.view.map(_.delegate).toArray
+      if (arr.length != 0)
+        new Struct(LLVM.LLVMStructTypeInContext(
+          context.delegate,
+          arr(0),
+          arr.length,
+          if (packed) 1 else 0))
+      else
+        new Struct(LLVM.LLVMStructTypeInContext(
+          context.delegate,
+          new Array[LLVM.LLVMTypeRef](1)(0),
+          arr.length,
+          if (packed) 1 else 0))
+    }
+  }
+
+  def struct(elementTypes: Type*)(implicit context: Context): Struct =
+    Struct(elementTypes)(context)
 
   //todo
   class Unknown(override val delegate: LLVM.LLVMTypeRef) extends Type(delegate)
