@@ -1,6 +1,12 @@
-package org.glavo.llvm.util
+package org.glavo.llvm
 
-object JNILoader {
+import java.net.URL
+import java.nio.ByteBuffer
+import java.nio.file.Files
+
+object JNIUtils {
+  def Encoding: String = "UTF-8"
+
   val jvmName: String = System.getProperty("java.vm.name", "").toLowerCase
 
   val osName: String = System.getProperty("os.name", "").toLowerCase match {
@@ -13,7 +19,7 @@ object JNILoader {
     case s if s.contains("windows") =>
       "windows"
     case s =>
-      val i = osName.indexOf(' ')
+      val i = s.indexOf(' ')
       if (i > 0)
         s.substring(0, i)
       else
@@ -38,13 +44,35 @@ object JNILoader {
 
   val platform: String = s"$osName-$osArch"
 
-  val suffix: String =osName match {
+  val suffix: String = osName match {
     case "windows" => ".dll"
     case "macosx" => ".dylib"
     case _ => ".so"
   }
 
-  def load(c: Class[_], libName: String): Unit = {
+  val prefix: String = if (osName == "windows") "" else "lib"
 
+  def load(url: URL): Unit = {
+    val fn = url.toString.split("/").last
+
+    val temp = Files.createTempFile("lib", "fn")
+    Files.deleteIfExists(temp)
+    Files.copy(url.openStream(), temp)
+    System.load(temp.toAbsolutePath.toFile.toString)
   }
+
+  def load(cls: Class[_], libName: String): Unit = {
+    load(cls.getResource(s"$platform/$prefix$libName$suffix"))
+  }
+
+  lazy val load: Unit = {
+    load(getClass, "LLVM-5.0")
+    load(getClass, "LTO")
+    load(getClass, "llvm4s")
+  }
+
+
+  def str2bytes(str: String): Array[Byte]@ByteString = str.getBytes(Encoding)
+
+  def bytes2str(bytes: Array[Byte]@ByteString): String = new String(bytes, Encoding)
 }
