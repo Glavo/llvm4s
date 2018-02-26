@@ -1,11 +1,8 @@
 package org.glavo.llvm.ir;
 
-import org.glavo.llvm.JNIUtils;
+import org.glavo.llvm.NativeImpl;
 
-public final class ContextImpl {
-    static {
-        JNIUtils.load();
-    }
+public final class ContextImpl extends NativeImpl{
 
     public static native long newInstance();
 
