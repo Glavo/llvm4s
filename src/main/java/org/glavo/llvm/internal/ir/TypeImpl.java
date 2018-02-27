@@ -1,7 +1,9 @@
-package org.glavo.llvm.ir;
+package org.glavo.llvm.internal.ir;
 
-import org.glavo.llvm.*;
-import org.glavo.llvm.Enum;
+import org.glavo.llvm.internal.*;
+import org.glavo.llvm.internal.Enum;
+import org.glavo.llvm.ir.Context;
+import org.glavo.llvm.ir.Type;
 
 public final class TypeImpl extends NativeImpl {
     public static native @Handle(Type.class) long getVoidTy(@Handle(Context.class) long context);

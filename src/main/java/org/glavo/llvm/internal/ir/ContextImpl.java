@@ -1,6 +1,6 @@
-package org.glavo.llvm.ir;
+package org.glavo.llvm.internal.ir;
 
-import org.glavo.llvm.NativeImpl;
+import org.glavo.llvm.internal.NativeImpl;
 
 public final class ContextImpl extends NativeImpl{
 

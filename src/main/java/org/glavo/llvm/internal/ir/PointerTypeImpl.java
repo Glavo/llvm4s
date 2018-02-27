@@ -1,8 +1,10 @@
-package org.glavo.llvm.ir;
+package org.glavo.llvm.internal.ir;
 
-import org.glavo.llvm.Handle;
-import org.glavo.llvm.NativeImpl;
-import org.glavo.llvm.Unsigned;
+import org.glavo.llvm.internal.Handle;
+import org.glavo.llvm.internal.NativeImpl;
+import org.glavo.llvm.internal.Unsigned;
+import org.glavo.llvm.ir.PointerType;
+import org.glavo.llvm.ir.Type;
 
 public final class PointerTypeImpl extends NativeImpl {
     public static native @Handle(PointerType.class) long get(@Handle(Type.class) long elementType, @Unsigned int addressSpace);

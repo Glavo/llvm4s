@@ -1,4 +1,4 @@
-package org.glavo.llvm;
+package org.glavo.llvm.internal;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,6 +1,7 @@
 package org.glavo.llvm.ir
 
 import org.glavo.llvm.Destructor
+import org.glavo.llvm.internal.ir.{ContextImpl, ModuleImpl}
 
 class Context private[llvm](private[llvm] var handle: Long,
                             private[llvm] var destructor: Destructor[Context] = null) {
@@ -14,6 +15,8 @@ class Context private[llvm](private[llvm] var handle: Long,
       destructor(this)
     }
   }
+
+  override def hashCode(): Int = handle.toInt
 
   override def equals(obj: scala.Any): Boolean = obj match {
     case c: Context => this.handle == c.handle

@@ -1,7 +1,9 @@
-package org.glavo.llvm.ir;
+package org.glavo.llvm.internal.ir;
 
-import org.glavo.llvm.Handle;
-import org.glavo.llvm.NativeImpl;
+import org.glavo.llvm.internal.Handle;
+import org.glavo.llvm.internal.NativeImpl;
+import org.glavo.llvm.ir.FunctionType;
+import org.glavo.llvm.ir.Type;
 
 public final class FunctionTypeImpl extends NativeImpl {
     public static native @Handle(FunctionType.class) long get(@Handle(Type.class) long result, @Handle(Type.class) long[] params, boolean isVarArg);

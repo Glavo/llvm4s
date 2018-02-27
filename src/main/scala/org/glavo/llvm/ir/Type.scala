@@ -1,9 +1,10 @@
 package org.glavo.llvm.ir
 
 import org.glavo.llvm._
+import org.glavo.llvm.internal.{Handle, JNIUtils, Unsigned}
+import org.glavo.llvm.internal.ir.TypeImpl
 
 import scala.collection.mutable
-import scala.ref.{ReferenceQueue, WeakReference}
 
 /** The instances of the Type class are immutable: once they are created,
   * they are never changed.  Also note that only one instance of a particular
@@ -90,7 +91,9 @@ abstract class Type private[llvm](private[llvm] val handle: Long) {
 
   def getFPMantissaWidth: Int = TypeImpl.getFPMantissaWidth(handle)
 
-  def getScalarType: Type = if (isVectorType) ??? else this
+  def getScalarType: Type = if (isVectorType) ??? else this //todo
+
+  def * : PointerType = PointerType(this)
 
   override def hashCode(): Int = handle.toInt
 
@@ -110,7 +113,7 @@ object Type {
   object ID {
 
     def apply(id: Int@Unsigned): ID =
-      if (id > 0 && id < 17)
+      if (id >= 0 && id < 17)
         values(id)
       else
         throw UnknownTypeIdException(s"id=${java.lang.Integer.toUnsignedLong(id)}")
@@ -195,7 +198,7 @@ object Type {
             new FunctionType(handle)
           case ID.Pointer =>
             new PointerType(handle)
-            //todo
+          //todo
         }
         typeList += t
         t

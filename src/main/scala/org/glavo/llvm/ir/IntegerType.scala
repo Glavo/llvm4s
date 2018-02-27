@@ -1,6 +1,7 @@
 package org.glavo.llvm.ir
 
-import org.glavo.llvm.Unsigned
+import org.glavo.llvm.internal.Unsigned
+import org.glavo.llvm.internal.ir.IntegerTypeImpl
 
 class IntegerType private[llvm](handle: Long) extends Type(handle) {
   def bitWidth: Int@Unsigned = IntegerTypeImpl.getBitWidth(handle)

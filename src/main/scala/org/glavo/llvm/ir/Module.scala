@@ -2,7 +2,9 @@ package org.glavo.llvm.ir
 
 import java.util.Objects
 
-import org.glavo.llvm.{Destructor, JNIUtils}
+import org.glavo.llvm.internal.ir.ModuleImpl
+import org.glavo.llvm.Destructor
+import org.glavo.llvm.internal.JNIUtils
 
 class Module private[llvm](private[llvm] var handle: Long,
                            private[llvm] val destructor: Destructor[Module] = null) {
@@ -45,6 +47,8 @@ class Module private[llvm](private[llvm] var handle: Long,
   }
 
   override def toString: String = s"Module(id=$id,sourceFileName=$sourceFileName)"
+
+  override def hashCode(): Int = handle.toInt
 
   override def equals(obj: scala.Any): Boolean = obj match {
     case m: Module => this.handle == m.handle

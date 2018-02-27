@@ -1,7 +1,6 @@
-package org.glavo.llvm
+package org.glavo.llvm.internal
 
 import java.net.URL
-import java.nio.ByteBuffer
 import java.nio.file.Files
 
 object JNIUtils {

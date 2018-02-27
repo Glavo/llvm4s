@@ -17,5 +17,5 @@ project/plugins/project/
 *.log
 
 __***
-libllvm4s.so
+src/main/resources/org/glavo/llvm/internal/linux-x86_64/libllvm4s.so
 llvm4s.dll

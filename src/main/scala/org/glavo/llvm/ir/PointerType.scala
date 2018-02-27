@@ -1,6 +1,7 @@
 package org.glavo.llvm.ir
 
-import org.glavo.llvm.Unsigned
+import org.glavo.llvm.internal.Unsigned
+import org.glavo.llvm.internal.ir.PointerTypeImpl
 
 class PointerType private[llvm](handle: Long) extends Type(handle) {
   val elementType: Type = Type(PointerTypeImpl.getElementType(handle))

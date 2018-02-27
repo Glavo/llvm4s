@@ -1,4 +1,4 @@
-package org.glavo.llvm;
+package org.glavo.llvm.internal;
 
 public abstract class NativeImpl {
     static {

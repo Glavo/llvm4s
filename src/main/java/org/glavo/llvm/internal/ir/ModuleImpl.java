@@ -1,11 +1,10 @@
-package org.glavo.llvm.ir;
+package org.glavo.llvm.internal.ir;
 
-import org.glavo.llvm.ByteString;
-import org.glavo.llvm.Handle;
-import org.glavo.llvm.JNIUtils;
-import org.glavo.llvm.NativeImpl;
-
-import java.nio.ByteBuffer;
+import org.glavo.llvm.internal.ByteString;
+import org.glavo.llvm.internal.Handle;
+import org.glavo.llvm.internal.NativeImpl;
+import org.glavo.llvm.ir.Context;
+import org.glavo.llvm.ir.Module;
 
 public final class ModuleImpl extends NativeImpl {
 

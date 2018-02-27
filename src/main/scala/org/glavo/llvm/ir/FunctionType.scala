@@ -2,6 +2,8 @@ package org.glavo.llvm.ir
 
 import java.util.Objects
 
+import org.glavo.llvm.internal.ir.FunctionTypeImpl
+
 class FunctionType private[llvm](handle: Long) extends Type(handle) {
   val isVarargs: Boolean = FunctionTypeImpl.isVarArg(handle)
 

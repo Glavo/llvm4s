@@ -1,5 +1,7 @@
 package org.glavo.llvm.ir
 
+import org.glavo.llvm.internal.ir.TypeImpl
+
 class LabelType private[llvm](handle: Long) extends Type(handle)
 
 object LabelType {
