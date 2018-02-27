@@ -15,5 +15,5 @@ public final class PointerTypeImpl extends NativeImpl {
 
     public static native @Handle(Type.class) long getElementType(@Handle(PointerType.class) long handle);
 
-    public static native @Unsigned int getAdressSpace(@Handle(PointerType.class) long handle);
+    public static native @Unsigned int getAddressSpace(@Handle(PointerType.class) long handle);
 }

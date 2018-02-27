@@ -54,9 +54,11 @@ object JNIUtils {
   def load(url: URL): Unit = {
     val fn = url.toString.split("/").last
 
+    val stream = url.openStream()
     val temp = Files.createTempFile("lib", "fn")
     Files.deleteIfExists(temp)
-    Files.copy(url.openStream(), temp)
+    Files.copy(stream, temp)
+    stream.close()
     System.load(temp.toAbsolutePath.toFile.toString)
   }
 

@@ -102,7 +102,7 @@ abstract class Type private[llvm](private[llvm] val handle: Long) {
     case _ => false
   }
 
-  override lazy val toString: String = s"Type(${JNIUtils.bytes2str(TypeImpl.toString(handle))})"
+  override def toString: String = s"Type(${JNIUtils.bytes2str(TypeImpl.toString(handle))})"
 }
 
 object Type {
@@ -198,7 +198,12 @@ object Type {
             new FunctionType(handle)
           case ID.Pointer =>
             new PointerType(handle)
-          //todo
+          case ID.Array =>
+            new ArrayType(handle)
+          case ID.Vector =>
+            new VectorType(handle)
+          case ID.Struct =>
+            new StructType(handle)
         }
         typeList += t
         t

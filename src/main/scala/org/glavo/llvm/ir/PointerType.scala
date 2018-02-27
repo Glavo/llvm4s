@@ -6,7 +6,7 @@ import org.glavo.llvm.internal.ir.PointerTypeImpl
 class PointerType private[llvm](handle: Long) extends Type(handle) {
   val elementType: Type = Type(PointerTypeImpl.getElementType(handle))
 
-  val addressSpace: Int@Unsigned = PointerTypeImpl.getAdressSpace(handle)
+  val addressSpace: Int@Unsigned = PointerTypeImpl.getAddressSpace(handle)
 }
 
 object PointerType {

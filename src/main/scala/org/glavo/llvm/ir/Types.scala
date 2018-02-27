@@ -3,6 +3,10 @@ package org.glavo.llvm.ir
 import org.glavo.llvm.internal.Unsigned
 
 object Types {
+  def struct(tpe: Type, types: Type*): StructType = StructType.get()(tpe +: types: _*)
+
+  def struct(context: Context, types: Type*): StructType = StructType.get(context = context)(types: _*)
+
   def pointer(elemType: Type, addressSpace: Int@Unsigned = 0): PointerType =
     PointerType(elemType, addressSpace)
 
