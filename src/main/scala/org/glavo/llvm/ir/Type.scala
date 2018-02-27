@@ -1,6 +1,9 @@
 package org.glavo.llvm.ir
 
-import org.glavo.llvm.{Destructor, JNIUtils, UnknownTypeIdException, Unsigned}
+import org.glavo.llvm._
+
+import scala.collection.mutable
+import scala.ref.{ReferenceQueue, WeakReference}
 
 /** The instances of the Type class are immutable: once they are created,
   * they are never changed.  Also note that only one instance of a particular
@@ -165,4 +168,19 @@ object Type {
 
   }
 
+  private[llvm] val typeList: mutable.Map[Long, Type] = mutable.HashMap()
+
+  private[llvm] def apply(handle: Long@Handle(classOf[Type])): Type = typeList.getOrElseUpdate(handle, {
+    if (handle == 0)
+      null
+    else {
+      Type.ID(TypeImpl.getTypeId(handle)) match {
+        case Type.ID.Function =>
+          new FunctionType(handle)
+        case Type.ID.Integer =>
+          new IntegerType(handle)
+        case _ => ??? //todo
+      }
+    }
+  })
 }

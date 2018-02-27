@@ -1,11 +1,13 @@
 package org.glavo.llvm.ir
 
-import org.glavo.llvm.{Destructor, Unsigned}
+import org.glavo.llvm.Unsigned
 
 class IntegerType private[llvm](handle: Long) extends Type(handle) {
   def bitWidth: Int@Unsigned = IntegerTypeImpl.getBitWidth(handle)
 
   def bitMask: Long@Unsigned = IntegerTypeImpl.getBitMask(handle)
+
+  def signBit: Long@Unsigned = IntegerTypeImpl.getSignBit(handle)
 
   def isPowerOf2ByteWidth: Boolean = IntegerTypeImpl.isPowerOf2ByteWidth(handle)
 }
@@ -13,4 +15,7 @@ class IntegerType private[llvm](handle: Long) extends Type(handle) {
 object IntegerType {
   val MinIntBits: Int = 1
   val MaxIntBits: Int = (1 << 24) - 1
+
+  def apply(numBits: Int@Unsigned)(implicit context: Context): IntegerType =
+    new IntegerType(IntegerTypeImpl.get(context.handle, numBits))
 }
