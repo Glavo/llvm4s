@@ -15,7 +15,8 @@ object FunctionType {
     Objects.requireNonNull(returnType)
     val args = parameterTypes.view.map(_.handle).toArray
     val r = FunctionTypeImpl.get(returnType.handle, args, isVarargs)
-    Type.typeList.getOrElseUpdate(r, new FunctionType(r)).asInstanceOf[FunctionType]
+
+    Type(r).asInstanceOf[FunctionType]
   }
 
   def isValidReturnType(tpe: Type): Boolean =

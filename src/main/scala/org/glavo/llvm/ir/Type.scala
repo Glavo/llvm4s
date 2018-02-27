@@ -41,7 +41,8 @@ abstract class Type private[llvm](private[llvm] val handle: Long) {
 
   def isPPC_FP128Type: Boolean = id == Type.ID.PPC_FP128
 
-  def isFloatingPointType: Boolean = isHalfType || isFloatType || isDoubleType || isX86_FP80Type || isFP128Type || isPPC_FP128Type
+  def isFloatingPointType: Boolean = isHalfType || isFloatType || isDoubleType || isX86_FP80Type ||
+    isFP128Type || isPPC_FP128Type
 
   def isX86_MMXType: Boolean = id == Type.ID.X86_MMX
 
@@ -91,6 +92,8 @@ abstract class Type private[llvm](private[llvm] val handle: Long) {
 
   def getScalarType: Type = if (isVectorType) ??? else this
 
+  override def hashCode(): Int = handle.toInt
+
   override def equals(obj: scala.Any): Boolean = obj match {
     case t: Type => this.handle == t.handle
     case _ => false
@@ -102,7 +105,7 @@ abstract class Type private[llvm](private[llvm] val handle: Long) {
 object Type {
 
   /** Definitions of all of the base types for the Type system. */
-  abstract sealed class ID(val id: Int)
+  abstract sealed class ID(val id: Int, val floatingPoint: Boolean = false)
 
   object ID {
 
@@ -119,22 +122,22 @@ object Type {
     case object Void extends ID(0)
 
     /** 16-bit floating point type */
-    case object Half extends ID(1)
+    case object Half extends ID(1, true)
 
     /** 32-bit floating point type */
-    case object Float extends ID(2)
+    case object Float extends ID(2, true)
 
     /** 64-bit floating point type */
-    case object Double extends ID(3)
+    case object Double extends ID(3, true)
 
     /** 80-bit floating point type (X87) */
-    case object X86_FP80 extends ID(4)
+    case object X86_FP80 extends ID(4, true)
 
     /** 128-bit floating point type (112-bit mantissa) */
-    case object FP128 extends ID(5)
+    case object FP128 extends ID(5, true)
 
     /** 128-bit floating point type (two 64-bits, PowerPC) */
-    case object PPC_FP128 extends ID(6)
+    case object PPC_FP128 extends ID(6, true)
 
     /** Labels */
     case object Label extends ID(7)
@@ -168,19 +171,34 @@ object Type {
 
   }
 
-  private[llvm] val typeList: mutable.Map[Long, Type] = mutable.HashMap()
+  private[llvm] val typeList: mutable.Set[Type] = mutable.HashSet()
 
-  private[llvm] def apply(handle: Long@Handle(classOf[Type])): Type = typeList.getOrElseUpdate(handle, {
+  private[llvm] def apply(handle: Long@Handle(classOf[Type])): Type = {
     if (handle == 0)
       null
-    else {
-      Type.ID(TypeImpl.getTypeId(handle)) match {
-        case Type.ID.Function =>
-          new FunctionType(handle)
-        case Type.ID.Integer =>
-          new IntegerType(handle)
-        case _ => ??? //todo
-      }
-    }
-  })
+    else
+      typeList.find(_.handle == handle).getOrElse({
+        val t = Type.ID(TypeImpl.getTypeId(handle)) match {
+          case ID.Void =>
+            new VoidType(handle)
+          case ID.Label =>
+            new LabelType(handle)
+          case ID.Metadata =>
+            new MetadataType(handle)
+          case ID.X86_MMX =>
+            new X86_MMXType(handle)
+          case ID.Integer =>
+            new IntegerType(handle)
+          case id if id.floatingPoint =>
+            new FloatingPointType(handle)
+          //todo
+          case ID.Function =>
+            new FunctionType(handle)
+          case _ => ??? //todo
+        }
+        typeList += t
+        t
+      })
+  }
 }
+
