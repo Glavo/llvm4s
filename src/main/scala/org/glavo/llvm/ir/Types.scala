@@ -3,6 +3,9 @@ package org.glavo.llvm.ir
 import org.glavo.llvm.Unsigned
 
 object Types {
+  def pointer(elemType: Type, addressSpace: Int@Unsigned = 0): PointerType =
+    PointerType(elemType, addressSpace)
+
   def fun(returnType: Type)(parameterTypes: Type*): FunctionType =
     FunctionType(returnType, parameterTypes)
 

@@ -17,5 +17,6 @@ object IntegerType {
   val MaxIntBits: Int = (1 << 24) - 1
 
   def apply(numBits: Int@Unsigned)(implicit context: Context): IntegerType =
-    new IntegerType(IntegerTypeImpl.get(context.handle, numBits))
+     Type(IntegerTypeImpl.get(context.handle, numBits)).asInstanceOf[IntegerType]
+
 }

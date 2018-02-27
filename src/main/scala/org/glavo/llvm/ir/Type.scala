@@ -191,10 +191,11 @@ object Type {
             new IntegerType(handle)
           case id if id.floatingPoint =>
             new FloatingPointType(handle)
-          //todo
           case ID.Function =>
             new FunctionType(handle)
-          case _ => ??? //todo
+          case ID.Pointer =>
+            new PointerType(handle)
+            //todo
         }
         typeList += t
         t
