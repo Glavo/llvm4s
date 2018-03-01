@@ -10,6 +10,12 @@ object Types {
   def pointer(elemType: Type, addressSpace: Int@Unsigned = 0): PointerType =
     PointerType(elemType, addressSpace)
 
+  def array(elemType: Type, numElements: Int@Unsigned): ArrayType =
+    ArrayType(elemType, numElements)
+
+  def vector(elemType: Type, numElements: Int@Unsigned): VectorType =
+    VectorType(elemType, numElements)
+
   case class fun(parameterTypes: Type*) {
     def ->(retType: Type): FunctionType = FunctionType(retType, parameterTypes)
   }

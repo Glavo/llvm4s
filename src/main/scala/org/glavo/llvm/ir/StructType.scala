@@ -32,6 +32,8 @@ class StructType private[llvm](handle: Long) extends CompositeType(handle) {
   }
 
   def size: Int = StructTypeImpl.getNumElements(handle)
+
+  override def toString: String = s"StructType($mkString)"
 }
 
 object StructType {

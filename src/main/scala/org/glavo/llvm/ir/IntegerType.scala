@@ -11,6 +11,8 @@ class IntegerType private[llvm](handle: Long) extends Type(handle) {
   def signBit: Long@Unsigned = IntegerTypeImpl.getSignBit(handle)
 
   def isPowerOf2ByteWidth: Boolean = IntegerTypeImpl.isPowerOf2ByteWidth(handle)
+
+  override def toString: String = s"IntegerType($mkString)"
 }
 
 object IntegerType {

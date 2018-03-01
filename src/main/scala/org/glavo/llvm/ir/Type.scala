@@ -102,7 +102,7 @@ abstract class Type private[llvm](private[llvm] val handle: Long) {
     case _ => false
   }
 
-  override def toString: String = s"Type(${JNIUtils.bytes2str(TypeImpl.toString(handle))})"
+  def mkString: String = JNIUtils.bytes2str(TypeImpl.toString(handle))
 }
 
 object Type {

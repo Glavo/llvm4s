@@ -10,6 +10,8 @@ class FunctionType private[llvm](handle: Long) extends Type(handle) {
   val returnType: Type = Type(FunctionTypeImpl.getRetunrnType(handle))
 
   lazy val parameterTypes: Seq[Type] = FunctionTypeImpl.getParamTypes(handle).map(Type.apply)
+
+  override def toString: String = s"FunctionType($mkString)"
 }
 
 object FunctionType {

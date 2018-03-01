@@ -7,6 +7,8 @@ class PointerType private[llvm](handle: Long) extends Type(handle) {
   val elementType: Type = Type(PointerTypeImpl.getElementType(handle))
 
   val addressSpace: Int@Unsigned = PointerTypeImpl.getAddressSpace(handle)
+
+  override def toString: String = s"PointerType($mkString)"
 }
 
 object PointerType {
