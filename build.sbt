@@ -32,30 +32,35 @@ lazy val core = (project in file("core"))
 lazy val `linux-x86` = (project in file("linux-x86"))
   .settings(
     name := "llvm4s-linux-x86",
-    version := llvm4sVersion
+    version := llvm4sVersion,
+    autoScalaLibrary := false
   )
 
 lazy val `linux-x86_64` = (project in file("linux-x86_64"))
   .settings(
     name := "llvm4s-linux-x86_64",
-    version := llvm4sVersion
+    version := llvm4sVersion,
+    autoScalaLibrary := false
   )
 
 lazy val `macosx-x86_64` = (project in file("macosx-x86_64"))
   .settings(
     name := "llvm4s-macosx-x86_64",
-    version := llvm4sVersion
+    version := llvm4sVersion,
+    autoScalaLibrary := false
   )
 
 lazy val `windows-x86` = (project in file("windows-x86"))
   .settings(
     name := "llvm4s-windows-x86",
-    version := llvm4sVersion
+    version := llvm4sVersion,
+    autoScalaLibrary := false
   )
 
 
 lazy val `windows-x86_64` = (project in file("windows-x86_64"))
   .settings(
     name := "llvm4s-windows-x86_64",
-    version := llvm4sVersion
+    version := llvm4sVersion,
+    autoScalaLibrary := false
   )
