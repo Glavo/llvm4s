@@ -7,7 +7,7 @@ import org.glavo.llvm.internal.ir.FunctionTypeImpl
 class FunctionType private[llvm](handle: Long) extends Type(handle) {
   val isVarargs: Boolean = FunctionTypeImpl.isVarArg(handle)
 
-  val returnType: Type = Type(FunctionTypeImpl.getRetunrnType(handle))
+  val returnType: Type = Type(FunctionTypeImpl.getReturnType(handle))
 
   lazy val parameterTypes: Seq[Type] = FunctionTypeImpl.getParamTypes(handle).map(Type.apply)
 

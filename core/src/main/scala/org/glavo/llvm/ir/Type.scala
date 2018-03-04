@@ -91,7 +91,10 @@ abstract class Type private[llvm](private[llvm] val handle: Long) {
 
   def getFPMantissaWidth: Int = TypeImpl.getFPMantissaWidth(handle)
 
-  def getScalarType: Type = if (isVectorType) ??? else this //todo
+  def getScalarType: Type = this match {
+    case vt: VectorType => vt.elementType
+    case _ => this
+  }
 
   def * : PointerType = PointerType(this)
 
@@ -176,7 +179,7 @@ object Type {
 
   private[llvm] val typeList: mutable.Set[Type] = mutable.HashSet()
 
-  private[llvm] def apply(handle: Long@Handle(classOf[Type])): Type = {
+  private[llvm] def apply(handle: Long@Handle("Type")): Type = {
     if (handle == 0)
       null
     else
