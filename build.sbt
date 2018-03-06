@@ -20,7 +20,7 @@ lazy val internal = (project in file("internal"))
     name := "llvm4s-internal",
     version := llvm4sVersion,
     autoScalaLibrary := false,
-    target in javah := file("target") / "jni-include"
+    target in javah := file("internal") / "src" / "main" / "jni-include"
   )
 
 lazy val core = (project in file("core"))
@@ -28,6 +28,7 @@ lazy val core = (project in file("core"))
     name := "llvm4s-core",
     version := llvm4sVersion
   ).dependsOn(internal)
+
 
 lazy val `linux-x86` = (project in file("linux-x86"))
   .settings(
