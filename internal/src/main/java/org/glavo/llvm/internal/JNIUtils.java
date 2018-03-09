@@ -86,16 +86,12 @@ public final class JNIUtils {
         if (!isLoaded) {
             isLoaded = true;
             try {
-                Class<?> cls = Class.forName(
-                        String.format(
-                                "%s.%s_%s",
-                                NativeLibrary.class.getPackage().getName(),
-                                NativeLibrary.class.getSimpleName(),
-                                PLATFORM.replace('-', '_')
-                        )
-                );
-                String[] libNames = (String[]) cls.getField("libNames").get(null);
+                Class<?> cls = NativeLibrary.class;
+                String[] libNames = NativeLibrary.libNames.get(PLATFORM);
 
+                if (libNames == null) {
+                    throw new Error("Unsupported platform!");
+                }
                 for (String libName : libNames) {
                     load(Objects.requireNonNull(cls.getResource(String.format("%s/%s%s%s", PLATFORM, PREFIX, libName, SUFFIX))));
                 }

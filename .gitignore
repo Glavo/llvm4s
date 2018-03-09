@@ -1,11 +1,11 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### CMake template
-CMakeCache.txt
+internal/src/main/resources/org/glavo/llvm/internal/linux-x86_64/CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Testing
-Makefile
-cmake_install.cmake
+internal/src/main/resources/org/glavo/llvm/internal/linux-x86_64/Makefile
+internal/src/main/resources/org/glavo/llvm/internal/linux-x86_64/cmake_install.cmake
 install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
@@ -24,11 +24,12 @@ project/plugins/project/
 .history
 .cache
 .lib/
+*.cbp
 
 .idea
 *.log
 
 __***
 libllvm4s.dylib
-libllvm4s.so
+internal/src/main/resources/org/glavo/llvm/internal/linux-x86_64/libllvm4s.so
 llvm4s.dll

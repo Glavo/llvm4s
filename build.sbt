@@ -13,15 +13,7 @@ lazy val all = (project in file("."))
     version := llvm4sVersion,
     crossScalaVersions := Seq("2.12.4", "2.11.11"),
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
-  ).dependsOn(core, `linux-x86`, `linux-x86_64`, `macosx-x86_64`, `windows-x86`, `windows-x86_64`)
-
-lazy val internal = (project in file("internal"))
-  .settings(
-    name := "llvm4s-internal",
-    version := llvm4sVersion,
-    autoScalaLibrary := false,
-    target in javah := file("internal") / "src" / "main" / "jni-include"
-  )
+  ).dependsOn(core, internal)
 
 lazy val core = (project in file("core"))
   .settings(
@@ -29,39 +21,10 @@ lazy val core = (project in file("core"))
     version := llvm4sVersion
   ).dependsOn(internal)
 
-
-lazy val `linux-x86` = (project in file("linux-x86"))
+lazy val internal = (project in file("internal"))
   .settings(
-    name := "llvm4s-linux-x86",
+    name := "llvm4s-internal",
     version := llvm4sVersion,
-    autoScalaLibrary := false
-  )
-
-lazy val `linux-x86_64` = (project in file("linux-x86_64"))
-  .settings(
-    name := "llvm4s-linux-x86_64",
-    version := llvm4sVersion,
-    autoScalaLibrary := false
-  )
-
-lazy val `macosx-x86_64` = (project in file("macosx-x86_64"))
-  .settings(
-    name := "llvm4s-macosx-x86_64",
-    version := llvm4sVersion,
-    autoScalaLibrary := false
-  )
-
-lazy val `windows-x86` = (project in file("windows-x86"))
-  .settings(
-    name := "llvm4s-windows-x86",
-    version := llvm4sVersion,
-    autoScalaLibrary := false
-  )
-
-
-lazy val `windows-x86_64` = (project in file("windows-x86_64"))
-  .settings(
-    name := "llvm4s-windows-x86_64",
-    version := llvm4sVersion,
-    autoScalaLibrary := false
+    autoScalaLibrary := false,
+    target in javah := file("internal") / "src" / "main" / "jni-include"
   )
