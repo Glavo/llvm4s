@@ -31,5 +31,5 @@ project/plugins/project/
 
 __***
 libllvm4s.dylib
-internal/src/main/resources/org/glavo/llvm/internal/linux-x86_64/libllvm4s.so
+libllvm4s.so
 llvm4s.dll
